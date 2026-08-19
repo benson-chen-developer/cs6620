@@ -1,0 +1,216 @@
+{
+  "scanId": "a81fc9b8-c5ad-4b23-8cc2-b0ed3e7ec2ff",
+  "targetId": "http://target:4000/api/users",
+  "targetUrl": "http://target:4000/api/users",
+  "startedAt": "2026-08-15T23:30:27.420Z",
+  "finishedAt": "2026-08-15T23:30:27.534Z",
+  "durationMs": 114,
+  "summary": {
+    "totalTests": 6,
+    "passed": 2,
+    "failed": 3,
+    "warnings": 1,
+    "errors": 0,
+    "totalFindings": 10,
+    "high": 3,
+    "medium": 7,
+    "low": 0
+  },
+  "findings": [
+    {
+      "key": "AUTH_MISSING::Endpoint accessible without authentication::",
+      "testId": "AUTH_MISSING",
+      "testName": "Missing Authentication",
+      "severity": "HIGH",
+      "issue": "Endpoint accessible without authentication",
+      "payload": null,
+      "evidence": "Received 200 response with data",
+      "recommendation": null
+    },
+    {
+      "key": "RATE_LIMITING::No rate limiting detected::",
+      "testId": "RATE_LIMITING",
+      "testName": "Rate Limiting",
+      "severity": "MEDIUM",
+      "issue": "No rate limiting detected",
+      "payload": null,
+      "evidence": "All 20 rapid requests succeeded without rate limiting",
+      "recommendation": null
+    },
+    {
+      "key": "SECURITY_HEADERS::Missing security header: X-Content-Type-Options::",
+      "testId": "SECURITY_HEADERS",
+      "testName": "Security Headers",
+      "severity": "MEDIUM",
+      "issue": "Missing security header: X-Content-Type-Options",
+      "payload": null,
+      "evidence": null,
+      "recommendation": "Add the X-Content-Type-Options header to responses"
+    },
+    {
+      "key": "SECURITY_HEADERS::Missing security header: X-Frame-Options::",
+      "testId": "SECURITY_HEADERS",
+      "testName": "Security Headers",
+      "severity": "MEDIUM",
+      "issue": "Missing security header: X-Frame-Options",
+      "payload": null,
+      "evidence": null,
+      "recommendation": "Add the X-Frame-Options header to responses"
+    },
+    {
+      "key": "SECURITY_HEADERS::Missing security header: X-XSS-Protection::",
+      "testId": "SECURITY_HEADERS",
+      "testName": "Security Headers",
+      "severity": "MEDIUM",
+      "issue": "Missing security header: X-XSS-Protection",
+      "payload": null,
+      "evidence": null,
+      "recommendation": "Add the X-XSS-Protection header to responses"
+    },
+    {
+      "key": "SECURITY_HEADERS::Missing security header: Strict-Transport-Security::",
+      "testId": "SECURITY_HEADERS",
+      "testName": "Security Headers",
+      "severity": "MEDIUM",
+      "issue": "Missing security header: Strict-Transport-Security",
+      "payload": null,
+      "evidence": null,
+      "recommendation": "Add the Strict-Transport-Security header to responses"
+    },
+    {
+      "key": "SECURITY_HEADERS::Missing security header: Content-Security-Policy::",
+      "testId": "SECURITY_HEADERS",
+      "testName": "Security Headers",
+      "severity": "MEDIUM",
+      "issue": "Missing security header: Content-Security-Policy",
+      "payload": null,
+      "evidence": null,
+      "recommendation": "Add the Content-Security-Policy header to responses"
+    },
+    {
+      "key": "SECURITY_HEADERS::X-Powered-By header exposes technology information::",
+      "testId": "SECURITY_HEADERS",
+      "testName": "Security Headers",
+      "severity": "MEDIUM",
+      "issue": "X-Powered-By header exposes technology information",
+      "payload": null,
+      "evidence": "X-Powered-By: Express",
+      "recommendation": "Remove the X-Powered-By header"
+    },
+    {
+      "key": "SENSITIVE_DATA_EXPOSURE::Password field exposed::",
+      "testId": "SENSITIVE_DATA_EXPOSURE",
+      "testName": "Sensitive Data Exposure",
+      "severity": "HIGH",
+      "issue": "Password field exposed",
+      "payload": null,
+      "evidence": "Sensitive pattern found in response body",
+      "recommendation": null
+    },
+    {
+      "key": "SENSITIVE_DATA_EXPOSURE::Secret field exposed::",
+      "testId": "SENSITIVE_DATA_EXPOSURE",
+      "testName": "Sensitive Data Exposure",
+      "severity": "HIGH",
+      "issue": "Secret field exposed",
+      "payload": null,
+      "evidence": "Sensitive pattern found in response body",
+      "recommendation": null
+    }
+  ],
+  "results": [
+    {
+      "id": "AUTH_MISSING",
+      "name": "Missing Authentication",
+      "status": "WARNING",
+      "severity": "HIGH",
+      "findings": [
+        {
+          "issue": "Endpoint accessible without authentication",
+          "evidence": "Received 200 response with data"
+        }
+      ],
+      "details": "The endpoint returns data without requiring authentication. Verify if this is intentional."
+    },
+    {
+      "id": "SQL_INJECTION",
+      "name": "SQL Injection",
+      "status": "PASS",
+      "severity": "HIGH",
+      "findings": [],
+      "details": "No SQL injection vulnerabilities detected with tested payloads."
+    },
+    {
+      "id": "NOSQL_INJECTION",
+      "name": "NoSQL Injection",
+      "status": "PASS",
+      "severity": "HIGH",
+      "findings": [],
+      "details": "No NoSQL injection vulnerabilities detected with tested payloads."
+    },
+    {
+      "id": "RATE_LIMITING",
+      "name": "Rate Limiting",
+      "status": "FAIL",
+      "severity": "MEDIUM",
+      "findings": [
+        {
+          "issue": "No rate limiting detected",
+          "evidence": "All 20 rapid requests succeeded without rate limiting"
+        }
+      ],
+      "details": "The API does not appear to have rate limiting. 20 requests were sent and all succeeded."
+    },
+    {
+      "id": "SECURITY_HEADERS",
+      "name": "Security Headers",
+      "status": "FAIL",
+      "severity": "MEDIUM",
+      "findings": [
+        {
+          "issue": "Missing security header: X-Content-Type-Options",
+          "recommendation": "Add the X-Content-Type-Options header to responses"
+        },
+        {
+          "issue": "Missing security header: X-Frame-Options",
+          "recommendation": "Add the X-Frame-Options header to responses"
+        },
+        {
+          "issue": "Missing security header: X-XSS-Protection",
+          "recommendation": "Add the X-XSS-Protection header to responses"
+        },
+        {
+          "issue": "Missing security header: Strict-Transport-Security",
+          "recommendation": "Add the Strict-Transport-Security header to responses"
+        },
+        {
+          "issue": "Missing security header: Content-Security-Policy",
+          "recommendation": "Add the Content-Security-Policy header to responses"
+        },
+        {
+          "issue": "X-Powered-By header exposes technology information",
+          "evidence": "X-Powered-By: Express",
+          "recommendation": "Remove the X-Powered-By header"
+        }
+      ],
+      "details": "Found 6 security header issue(s)."
+    },
+    {
+      "id": "SENSITIVE_DATA_EXPOSURE",
+      "name": "Sensitive Data Exposure",
+      "status": "FAIL",
+      "severity": "HIGH",
+      "findings": [
+        {
+          "issue": "Password field exposed",
+          "evidence": "Sensitive pattern found in response body"
+        },
+        {
+          "issue": "Secret field exposed",
+          "evidence": "Sensitive pattern found in response body"
+        }
+      ],
+      "details": "Found 2 sensitive data exposure issue(s)."
+    }
+  ]
+}

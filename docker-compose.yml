@@ -1,0 +1,77 @@
+# Local development stack: the pentest tool, the vulnerable API it
+# scans, and free emulators standing in for S3 and DynamoDB.
+#
+#   docker compose up -d --build
+#   docker compose run --rm -T pentest node bootstrap-local.js
+#   docker compose run --rm -T pentest node worker.js
+name: cs6620-security-platform
+
+services:
+  # MinIO speaks the S3 API, so the AWS SDK talks to it unmodified.
+  # Console at http://localhost:9001 (minioadmin / minioadmin).
+  minio:
+    image: minio/minio:latest
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: "minioadmin"
+      MINIO_ROOT_PASSWORD: "minioadmin"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+  # AWS's own local DynamoDB build. -sharedDb keeps one table set
+  # regardless of credentials; -inMemory resets on restart.
+  dynamodb:
+    image: amazon/dynamodb-local:latest
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
+    ports:
+      - "8000:8000"
+
+  # The vulnerable API under test. This is the thing we attack.
+  target:
+    build: ./pentest/backend
+    image: cs6620/pentest:local
+    command: ["node", "test-target.js"]
+    environment:
+      PORT: "4000"
+    ports:
+      - "4000:4000"
+
+  # The scanner. Runs as a server here; on AWS the same image runs
+  # worker.js instead and exits when the scan is done.
+  pentest:
+    build: ./pentest/backend
+    image: cs6620/pentest:local
+    environment:
+      PORT: "3000"
+
+      # Compose's DNS resolves service names to container IPs. Inside
+      # a container `localhost` means that container, so cross-container
+      # calls must use the service name.
+      TARGET_URL: "http://target:4000/api/users"
+      TARGET_ID: "test-target"
+
+      # Unset these three and the identical code talks to real AWS.
+      S3_ENDPOINT_URL: "http://minio:9000"
+      DYNAMODB_ENDPOINT_URL: "http://dynamodb:8000"
+      AWS_REGION: "us-east-1"
+
+      # MinIO's root credentials. Local only, not secrets — on AWS the
+      # task role supplies credentials and these are unset.
+      AWS_ACCESS_KEY_ID: "minioadmin"
+      AWS_SECRET_ACCESS_KEY: "minioadmin"
+
+      REPORTS_BUCKET: "cs6620-scan-reports"
+      SCANS_TABLE: "scans"
+      # Left empty locally: with no SNS emulator, publishAlert prints
+      # the message instead of sending it.
+      ALERT_TOPIC_ARN: ""
+    ports:
+      - "3000:3000"
+    depends_on:
+      target:
+        condition: service_healthy
+      minio:
+        condition: service_started
+      dynamodb:
+        condition: service_started
