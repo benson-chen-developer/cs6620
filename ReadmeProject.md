@@ -4,7 +4,7 @@ Prereqs:
     - Run `aws configure` and set creditonals
     - Run `aws configure set aws_session_token [session_token]`
 
-1. DynamoDB
+1. Terraform
     - `cd cs6620/terraform`
     - `terraform init` apply each time a change to terraform code or backend occurs
     - `terraform validate` ensures the terraform configure is valid

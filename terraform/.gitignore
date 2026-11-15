@@ -3,4 +3,3 @@ terraform.tfstate
 terraform.tfstate.*
 *.tfplan
 crash.log
-scheduler.zip
