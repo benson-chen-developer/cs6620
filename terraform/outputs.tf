@@ -3,7 +3,7 @@ output "scan_jobs_queue_url" {
 }
 
 output "reports_bucket" {
-  value = aws_s3_bucket.reports.bucket
+  value = data.aws_s3_bucket.reports.id
 }
 
 output "worker_repository_url" {

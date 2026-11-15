@@ -1,0 +1,11 @@
+FROM node:26-slim
+
+WORKDIR /app/
+
+COPY package*.json ./
+
+RUN npm ci --omit=dev
+
+COPY . ./
+
+CMD ["node", "worker.js"]

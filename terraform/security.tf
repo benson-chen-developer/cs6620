@@ -1,3 +1,5 @@
+# This file contains the security groups
+
 # Dashboard security group
 resource "aws_security_group" "dashboard" {
   name   = "pentest-dashboard-sg"
