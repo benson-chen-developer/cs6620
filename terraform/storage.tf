@@ -1,3 +1,5 @@
+# This file contains all the storage (ECR, SQS, S3)
+
 # Look up AWS account ID for making bucket name unique
 data "aws_caller_identity" "current" {}
 
@@ -33,16 +35,9 @@ resource "aws_sqs_queue" "scan_jobs" {
 }
 
 # S3
-resource "aws_s3_bucket" "reports" {
-  bucket        = "pentest-reports-${data.aws_caller_identity.current.account_id}"
-  force_destroy = true # Lets "terraform destroy" delete the bucket even if it holds reports
-}
-
-# Restrict public access to S3 bucket
-resource "aws_s3_bucket_public_access_block" "reports" {
-  bucket                  = aws_s3_bucket.reports.id
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+# The bucket needs to be created manually as Learner Lab blocks
+# a bucket setting. Terraform will only look it up, so apply and destroy
+# never change it
+data "aws_s3_bucket" "reports" {
+  bucket = "pentest-reports-${data.aws_caller_identity.current.account_id}"
 }
