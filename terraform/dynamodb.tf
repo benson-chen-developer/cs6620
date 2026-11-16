@@ -27,7 +27,7 @@ resource "aws_dynamodb_table" "targets" {
   # based on active apis and when their next scheduled 
   # runs are. We want to query for the next closest runs instead of 
   # all of them.
-  global_secondary_index { 
+  global_secondary_index {
     name            = "status-nextRunAt-index"
     hash_key        = "status"
     range_key       = "nextRunAt"
@@ -47,7 +47,7 @@ resource "aws_dynamodb_table" "scans" {
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "targetId"
   range_key    = "scanId"
- 
+
   # targetId+scanId makes up a primary key
   attribute {
     name = "targetId"

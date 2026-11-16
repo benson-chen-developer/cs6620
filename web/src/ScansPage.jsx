@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
 
+// Scan ids are ISO timestamps; fall back to the raw id if one isn't.
+function formatScanTime(scanId) {
+  const d = new Date(scanId);
+  return Number.isNaN(d.getTime()) ? `Scan ${scanId}` : d.toLocaleString();
+}
+
 export default function ScansPage({ email }) {
   const [scans, setScans] = useState([]);
   const [error, setError] = useState('');
@@ -22,7 +28,6 @@ export default function ScansPage({ email }) {
         if (!res.ok) throw new Error(data.error || 'Failed to load scans.');
         if (!cancelled) {
           setScans(data);
-          console.log("scan data", data)
         }
       } catch (err) {
         if (!cancelled) setError(err.message);
@@ -75,22 +80,26 @@ export default function ScansPage({ email }) {
       ) : (
         <ul className="target-list">
           {scans.map((s) => (
-            <li key={`${s.targetId}/${s.scanId}`} style={{ display: 'block' }}>
+            <li key={`${s.targetId}/${s.scanId}`} className="scan-item">
               <button
                 type="button"
-                className="target scan-row"
+                className="scan-row"
                 onClick={() => openReport(s)}
               >
-                <div>
-                  <div className="target-url">{s.url}</div>
-                  <div className="target-meta">
-                    Scan {s.scanId}
-                    {s.counts &&
-                      ` · ${s.counts.fail} failed, ${s.counts.warning} warnings, ${s.counts.pass} passed`}
-                  </div>
+                <div className="scan-main">
+                  <div className="scan-url">{s.url}</div>
+                  <div className="scan-time">{formatScanTime(s.scanId)}</div>
+                  {s.counts && (
+                    <div className="scan-counts">
+                      <span className="count fail">{s.counts.fail} failed</span>
+                      <span className="count warn">{s.counts.warning} warnings</span>
+                      <span className="count pass">{s.counts.pass} passed</span>
+                    </div>
+                  )}
                 </div>
-                <div className="badges">
-                  <span className={`badge ${s.status}`}>{s.status}</span>
+                <div className="scan-side">
+                  <span className={`badge scan-status ${s.status}`}>{s.status}</span>
+                  <span className="scan-chevron" aria-hidden="true">›</span>
                 </div>
               </button>
             </li>

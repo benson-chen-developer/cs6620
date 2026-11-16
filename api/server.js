@@ -8,6 +8,7 @@ import {
 import { S3Client, GetObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import express from 'express';
 import { randomUUID } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 
 const app = express();
 const port = Number(process.env.PORT || 3001);
@@ -177,12 +178,9 @@ app.get('/scans', async (req, res) => {
   }
 });
 
-// Finds the S3 key of the report for a scanId by listing the whole bucket.
-// A key matches if its file name is the scanId, with or without ".json"
-// (e.g. scanId "abc" matches "abc.json" or "abc"; "fake-report.json" matches
-// "fake-report.json"). Works for keys at the root or inside folders.
-async function findReportKey(scanId) {
-  const names = new Set([scanId, `${scanId}.json`]);
+//Matches a report key against the list of objects in S3 and finds the correct one.
+async function findReportKey(reportKey) {
+  const names = new Set([reportKey, `${reportKey}.json`]);
   let token;
   do {
     const page = await s3.send(new ListObjectsV2Command({
@@ -220,6 +218,11 @@ app.get('/scans/report', async (req, res) => {
     return res.status(500).json({ error: 'Could not load report.' });
   }
 });
+
+// Serve the built React app (the Docker image puts it in ./public).
+// Registered after the API routes so they take priority.
+const publicDir = process.env.PUBLIC_DIR || fileURLToPath(new URL('./public', import.meta.url));
+app.use(express.static(publicDir));
 
 // Verify AWS credentials and that the tables exist before accepting requests.
 async function verifyDynamo() {

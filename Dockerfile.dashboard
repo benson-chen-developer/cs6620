@@ -1,0 +1,20 @@
+# Dashboard image: React UI (built with Vite) served by the Express API.
+# Build from the repo root:  docker build -f Dockerfile.dashboard .
+
+# Stage 1: build the React app into web/dist
+FROM node:26-slim AS web-build
+WORKDIR /web
+COPY web/package*.json ./
+RUN npm ci
+COPY web/ ./
+RUN npm run build
+
+# Stage 2: the API, plus the built UI in ./public
+FROM node:26-slim
+WORKDIR /app
+COPY api/package*.json ./
+RUN npm ci --omit=dev
+COPY api/ ./
+COPY --from=web-build /web/dist ./public
+ENV PORT=3001
+CMD ["node", "server.js"]

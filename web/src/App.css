@@ -177,13 +177,6 @@ button.user-chip:hover {
   border-color: var(--accent);
   color: var(--accent);
 }
-button.scan-row {
-  width: 100%;
-  font: inherit;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-}
 .report pre {
   max-height: 400px;
   overflow: auto;
@@ -265,3 +258,46 @@ button.scan-row {
 .badge.status-PASS { background: var(--ok-bg); color: var(--ok); }
 .badge.status-FAIL, .badge.status-ERROR { background: var(--danger-bg); color: var(--danger); }
 .badge.status-WARNING { background: #fef3c7; color: #92400e; }
+
+.scan-item { margin-bottom: 10px; }
+.scan-item:last-child { margin-bottom: 0; }
+button.scan-row {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  transition: border-color 0.15s, transform 0.15s;
+}
+button.scan-row:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.scan-main { min-width: 0; }
+.scan-url { font-weight: 600; word-break: break-all; }
+.scan-time { color: var(--muted); font-size: 0.82rem; margin-top: 2px; }
+.scan-counts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.count.fail { background: var(--danger-bg); color: var(--danger); border-color: transparent; }
+.count.warn { background: #fef3c7; color: #92400e; border-color: transparent; }
+.count.pass { background: var(--ok-bg); color: var(--ok); border-color: transparent; }
+.scan-side { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.scan-chevron { color: var(--muted); font-size: 1.4rem; line-height: 1; }
+.badge.done { background: var(--ok-bg); color: var(--ok); border-color: transparent; }
+.badge.running { background: #fef3c7; color: #92400e; border-color: transparent; }

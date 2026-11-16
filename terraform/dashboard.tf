@@ -16,6 +16,46 @@ resource "aws_cloudwatch_log_group" "dashboard" {
   retention_in_days = 7
 }
 
+# Tag the image with a hash of its source files. When the UI or API changes, the
+# tag changes, which rebuilds + pushes the image and (through the launch
+# template below) rolls the dashboard instance onto the new image.
+locals {
+  repo_root = "${path.module}/.."
+  dashboard_source_files = setunion(
+    fileset(local.repo_root, "web/src/**"),
+    fileset(local.repo_root, "api/*.js"),
+    toset([
+      "Dockerfile.dashboard",
+      "web/index.html",
+      "web/package.json",
+      "web/package-lock.json",
+      "web/vite.config.js",
+      "api/package.json",
+      "api/package-lock.json",
+    ])
+  )
+  dashboard_tag = substr(sha1(join("", [
+    for f in sort(tolist(local.dashboard_source_files)) : filesha1("${local.repo_root}/${f}")
+  ])), 0, 12)
+}
+
+# Builds the dashboard image (React UI + Express API) and pushes it to ECR.
+# Needs Docker running, the AWS CLI configured, and bash (Git Bash on Windows).
+resource "terraform_data" "dashboard_image" {
+  triggers_replace = [local.dashboard_tag, aws_ecr_repository.dashboard.repository_url]
+
+  provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
+    command     = "${path.module}/build-dashboard-image.sh"
+    environment = {
+      REGION    = "us-east-1"
+      REPO_URL  = aws_ecr_repository.dashboard.repository_url
+      TAG       = local.dashboard_tag
+      REPO_ROOT = local.repo_root
+    }
+  }
+}
+
 # Launch template for dashboard image
 resource "aws_launch_template" "dashboard" {
   name_prefix            = "pentest-dashboard-"
@@ -33,7 +73,7 @@ resource "aws_launch_template" "dashboard" {
     region            = "us-east-1"
     eip_allocation_id = aws_eip.dashboard.allocation_id
     registry          = split("/", aws_ecr_repository.dashboard.repository_url)[0]
-    image             = "${aws_ecr_repository.dashboard.repository_url}:latest"
+    image             = "${aws_ecr_repository.dashboard.repository_url}:${terraform_data.dashboard_image.triggers_replace[0]}"
     targets_table     = aws_dynamodb_table.targets.name
     scans_table       = aws_dynamodb_table.scans.name
     reports_bucket    = data.aws_s3_bucket.reports.id
