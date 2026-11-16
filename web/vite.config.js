@@ -6,7 +6,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/targets': 'http://localhost:3001'
+      '/targets': 'http://localhost:3001',
+      '/scans': 'http://localhost:3001'
     }
   }
 });

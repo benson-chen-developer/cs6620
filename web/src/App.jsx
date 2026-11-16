@@ -1,9 +1,32 @@
 import { useEffect, useState } from 'react';
 import './App.css';
+import ScansPage from './ScansPage.jsx';
+
+const DEFAULT_EMAIL = 'dev@example.com';
 
 export default function App() {
-  // Hard-coded for now; replace with real auth later.
-  const [email] = useState('dev@example.com');
+  // Not real auth: just lets you pick which email to act as.
+  const [email, setEmail] = useState(
+    () => localStorage.getItem('email') || DEFAULT_EMAIL
+  );
+  const [page, setPage] = useState('targets');
+  const [switching, setSwitching] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
+
+  function chooseEmail(raw) {
+    const next = raw.trim().toLowerCase();
+    setEmail(next);
+    localStorage.setItem('email', next);
+    setTargets([]);
+    setError('');
+    setSwitching(false);
+  }
+
+  function handleEmailSubmit(e) {
+    e.preventDefault();
+    chooseEmail(emailInput);
+    setEmailInput('');
+  }
 
   const [url, setUrl] = useState('');
   const [frequency, setFrequency] = useState('daily');
@@ -11,19 +34,23 @@ export default function App() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  async function loadTargets() {
+  async function loadTargets(isStale = () => false) {
     try {
       const res = await fetch(`/targets?ownerId=${encodeURIComponent(email)}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to load targets.');
-      setTargets(data);
+      if (!isStale()) setTargets(data);
     } catch (err) {
-      setError(err.message);
+      if (!isStale()) setError(err.message);
     }
   }
 
   useEffect(() => {
-    loadTargets();
+    let stale = false;
+    loadTargets(() => stale);
+    return () => {
+      stale = true;
+    };
   }, [email]);
 
   async function handleSubmit(e) {
@@ -47,13 +74,79 @@ export default function App() {
     }
   }
 
+  if (switching) {
+    return (
+      <main className="app">
+        <header className="header">
+          <h1>Pentest Scheduler</h1>
+        </header>
+        <section className="card">
+          <h2>Choose an email</h2>
+          <button
+            className="btn"
+            type="button"
+            onClick={() => chooseEmail(DEFAULT_EMAIL)}
+          >
+            Use {DEFAULT_EMAIL}
+          </button>
+          <form className="form" onSubmit={handleEmailSubmit} style={{ marginTop: 12 }}>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={emailInput}
+              onChange={(e) => setEmailInput(e.target.value)}
+              required
+            />
+            <button className="btn" type="submit">Continue</button>
+          </form>
+          <button
+            className="btn"
+            type="button"
+            style={{ marginTop: 12 }}
+            onClick={() => setSwitching(false)}
+          >
+            Cancel
+          </button>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="app">
       <header className="header">
         <h1>Pentest Scheduler</h1>
-        <span className="user-chip">{email}</span>
+        <button
+          type="button"
+          className="user-chip"
+          title="Change email"
+          onClick={() => setSwitching(true)}
+        >
+          {email} ▾
+        </button>
       </header>
 
+      <nav className="nav">
+        <button
+          type="button"
+          className={page === 'targets' ? 'active' : ''}
+          onClick={() => setPage('targets')}
+        >
+          Targets
+        </button>
+        <button
+          type="button"
+          className={page === 'scans' ? 'active' : ''}
+          onClick={() => setPage('scans')}
+        >
+          Scans
+        </button>
+      </nav>
+
+      {page === 'scans' ? (
+        <ScansPage email={email} />
+      ) : (
+        <>
       <section className="card">
         <h2>Register a target</h2>
         <form className="form" onSubmit={handleSubmit}>
@@ -99,6 +192,8 @@ export default function App() {
           </ul>
         )}
       </section>
+        </>
+      )}
     </main>
   );
 }

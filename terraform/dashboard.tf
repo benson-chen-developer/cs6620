@@ -36,6 +36,7 @@ resource "aws_launch_template" "dashboard" {
     image             = "${aws_ecr_repository.dashboard.repository_url}:latest"
     targets_table     = aws_dynamodb_table.targets.name
     scans_table       = aws_dynamodb_table.scans.name
+    reports_bucket    = data.aws_s3_bucket.reports.id
     log_group         = aws_cloudwatch_log_group.dashboard.name
   }))
 
