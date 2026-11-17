@@ -3,6 +3,36 @@
 # LabRole, used to give container permission to call AWS services
 locals {
   lab_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole"
+
+  worker_source_files = setunion(
+    fileset(local.repo_root, "worker/*.js"),
+    fileset(local.repo_root, "worker/pentest/**"),
+    toset([
+      "worker/Dockerfile",
+      "worker/package.json",
+      "worker/package-lock.json",
+    ])
+  )
+  worker_tag = substr(sha1(join("", [
+    for f in sort(tolist(local.worker_source_files)) : filesha1("${local.repo_root}/${f}")
+  ])), 0, 12)
+}
+
+# Builds the worker image and pushes it to ECR.
+# Needs Docker running, the AWS CLI configured, and bash (Git Bash on Windows).
+resource "terraform_data" "worker_image" {
+  triggers_replace = [local.worker_tag, aws_ecr_repository.worker.repository_url]
+
+  provisioner "local-exec" {
+    interpreter = ["bash"]
+    command     = "${path.module}/build-worker-image.sh"
+    environment = {
+      REGION    = "us-east-1"
+      REPO_URL  = aws_ecr_repository.worker.repository_url
+      TAG       = local.worker_tag
+      REPO_ROOT = local.repo_root
+    }
+  }
 }
 
 # ECS cluster
@@ -29,7 +59,7 @@ resource "aws_ecs_task_definition" "worker" {
   container_definitions = jsonencode([
     {
       name      = "worker"
-      image     = "${aws_ecr_repository.worker.repository_url}:latest"
+      image     = "${aws_ecr_repository.worker.repository_url}:${terraform_data.worker_image.triggers_replace[0]}"
       essential = true
 
       # Environment variables
