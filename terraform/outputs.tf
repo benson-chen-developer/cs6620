@@ -13,3 +13,7 @@ output "worker_repository_url" {
 output "dashboard_repository_url" {
   value = aws_ecr_repository.dashboard.repository_url
 }
+
+output "dashboard_url" {
+  value = "http://${aws_eip.dashboard.public_ip}"
+}
