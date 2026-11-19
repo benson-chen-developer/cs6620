@@ -16,3 +16,7 @@ output "dashboard_repository_url" {
 output "alerts_topic_arn" {
   value = aws_sns_topic.alerts.arn
 }
+
+output "dashboard_url" {
+  value = "http://${aws_eip.dashboard.public_ip}"
+}
