@@ -77,6 +77,7 @@ resource "aws_launch_template" "dashboard" {
     targets_table     = aws_dynamodb_table.targets.name
     scans_table       = aws_dynamodb_table.scans.name
     reports_bucket    = data.aws_s3_bucket.reports.id
+    alerts_topic_arn  = aws_sns_topic.alerts.arn
     log_group         = aws_cloudwatch_log_group.dashboard.name
   }))
 

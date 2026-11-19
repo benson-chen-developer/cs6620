@@ -13,3 +13,6 @@ output "worker_repository_url" {
 output "dashboard_repository_url" {
   value = aws_ecr_repository.dashboard.repository_url
 }
+output "alerts_topic_arn" {
+  value = aws_sns_topic.alerts.arn
+}

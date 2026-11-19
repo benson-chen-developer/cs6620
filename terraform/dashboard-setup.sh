@@ -22,6 +22,7 @@ docker run -d --restart always --name dashboard -p 80:3001 \
   -e TARGETS_TABLE=${targets_table} \
   -e SCANS_TABLE=${scans_table} \
   -e REPORTS_BUCKET=${reports_bucket} \
+  -e SNS_TOPIC_ARN=${alerts_topic_arn} \
   --log-driver=awslogs \
   --log-opt awslogs-group=${log_group} \
   --log-opt awslogs-region=${region} \

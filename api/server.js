@@ -6,6 +6,7 @@ import {
   QueryCommand
 } from '@aws-sdk/lib-dynamodb';
 import { S3Client, GetObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
+import { SNSClient, SubscribeCommand } from '@aws-sdk/client-sns';
 import express from 'express';
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
@@ -16,6 +17,7 @@ const targetsTable = process.env.TARGETS_TABLE || 'targets';
 const scansTable = process.env.SCANS_TABLE || 'scans';
 const ownerIndex = process.env.OWNER_INDEX || 'ownerId-index';
 const reportsBucket = process.env.REPORTS_BUCKET || 'pentest-reports-734159569569';
+const alertsTopicArn = process.env.SNS_TOPIC_ARN;
 
 const dynamoConfig = {
   region: process.env.AWS_REGION || 'us-east-1'
@@ -28,6 +30,7 @@ const dynamo = DynamoDBDocumentClient.from(dynamoClient, {
 });
 
 const s3 = new S3Client(dynamoConfig);
+const sns = new SNSClient(dynamoConfig);
 
 // Emails are the owner key, so normalize them the same way everywhere.
 const normalizeEmail = (value) =>
@@ -40,6 +43,29 @@ const scheduleIntervals = {
 };
 
 app.use(express.json());
+
+// Subscribes the owner's email to the alerts topic, filtered so they only get
+// alerts the worker publishes with this target's id as the "targetId" attribute.
+// The owner must click the confirmation link AWS emails them. A failure here is
+// logged but never fails registration, since the target is already saved.
+async function subscribeToAlerts(target) {
+  if (!alertsTopicArn) {
+    console.warn('SNS_TOPIC_ARN is not set; skipping alert subscription.');
+    return;
+  }
+  try {
+    await sns.send(new SubscribeCommand({
+      TopicArn: alertsTopicArn,
+      Protocol: 'email',
+      Endpoint: target.email,
+      Attributes: {
+        FilterPolicy: JSON.stringify({ targetId: [target.targetId] })
+      }
+    }));
+  } catch (error) {
+    console.error(`Failed to subscribe ${target.email} for target ${target.targetId}:`, error);
+  }
+}
 
 // POST /targets - Create a new target (api url) for scanning.
 app.post('/targets', async (req, res) => {
@@ -97,6 +123,7 @@ app.post('/targets', async (req, res) => {
       TableName: targetsTable,
       Item: target
     }));
+    await subscribeToAlerts(target); //sub the user's email to the alerts topic for this targetId, but don't fail if it fails
     return res.status(201).json(target);
   } catch (error) {
     console.error('Failed to create target:', error);

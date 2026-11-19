@@ -14,7 +14,7 @@ Prereqs:
 2. Server.js
     - `cd cs6620/api`
     - `unset DYNAMODB_ENDPOINT` ensures the program connects to an AWS instance in stead of local db
-    - `npm start`
+    - `npm run dev`
 
     Request Examples
         [targets](http://localhost:3001/targets)
@@ -27,3 +27,8 @@ Prereqs:
     - `cd cs6620/web`
     - `npm install` if first time or pulled changes
     - `npm run dev` runs app
+
+4. SNS Alerts Logic
+    - When a user registers a target, we subscribe their email to pentest-alerts.
+    - We attach a filter policy of {"targetId": ["fakeId"]}. Basically saying this subscriber only wants messages tagged with this id.
+    - When a bad request occurs, it will send this notification out to the target and user's with that target will be notified.

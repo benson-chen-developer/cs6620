@@ -38,6 +38,7 @@ resource "aws_ecs_task_definition" "worker" {
         { name = "REPORTS_BUCKET", value = data.aws_s3_bucket.reports.id },
         { name = "TARGETS_TABLE", value = aws_dynamodb_table.targets.name },
         { name = "SCANS_TABLE", value = aws_dynamodb_table.scans.name },
+        { name = "SNS_TOPIC_ARN", value = aws_sns_topic.alerts.arn },
         { name = "AWS_REGION", value = "us-east-1" }
       ]
 
